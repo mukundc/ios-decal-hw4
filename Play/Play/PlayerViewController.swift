@@ -130,17 +130,38 @@ class PlayerViewController: UIViewController {
         let track = tracks[currentIndex]
         let url = NSURL(string: "https://api.soundcloud.com/tracks/\(track.id)/stream?client_id=\(clientID)")!
         // FILL ME IN
-    
+        if self.player.currentItem == nil {
+            self.player = AVPlayer(playerItem: AVPlayerItem(URL: url))
+        }
+        
+        if sender.selected {
+            sender.selected = false
+            player.pause()
+        } else {
+            sender.selected = true
+            player.play()
+        }
     }
     
-    /* 
+    /*
      * Called when the next button is tapped. It should check if there is a next
      * track, and if so it will load the next track's data and
      * automatically play the song if a song is already playing
      * Remember to update the currentIndex
      */
     func nextTrackTapped(sender: UIButton) {
-    
+        if self.tracks.count > self.currentIndex + 1 {
+            self.currentIndex = self.currentIndex + 1
+            loadTrackElements()
+            let path = NSBundle.mainBundle().pathForResource("Info", ofType: "plist")
+            let clientID = NSDictionary(contentsOfFile: path!)?.valueForKey("client_id") as! String
+            let track = tracks[currentIndex]
+            let url = NSURL(string: "https://api.soundcloud.com/tracks/\(track.id)/stream?client_id=\(clientID)")!
+            player.replaceCurrentItemWithPlayerItem(AVPlayerItem(URL: url))
+            if playPauseButton.selected {
+                player.play()
+            }
+        }
     }
 
     /*
@@ -154,9 +175,23 @@ class PlayerViewController: UIViewController {
      */
 
     func previousTrackTapped(sender: UIButton) {
-    
+        if player.currentTime().seconds > 3 {
+            player.seekToTime(kCMTimeZero)
+        } else {
+            if self.currentIndex > 0 {
+                self.currentIndex = self.currentIndex - 1
+            }
+            loadTrackElements()
+            let path = NSBundle.mainBundle().pathForResource("Info", ofType: "plist")
+            let clientID = NSDictionary(contentsOfFile: path!)?.valueForKey("client_id") as! String
+            let track = tracks[currentIndex]
+            let url = NSURL(string: "https://api.soundcloud.com/tracks/\(track.id)/stream?client_id=\(clientID)")!
+            player.replaceCurrentItemWithPlayerItem(AVPlayerItem(URL: url))
+            if playPauseButton.selected {
+                player.play()
+            }
+        }
     }
-    
     
     func asyncLoadTrackImage(track: Track) {
         let url = NSURL(string: track.artworkURL)
